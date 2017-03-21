@@ -2,22 +2,34 @@ var cheerio = require('cheerio');
 var promise = require('bluebird');
 var fetch = require('node-fetch');
 var seedURL = 'http://www.nettiauto.com/mercedes-benz/c?id_vehicle_type=1&id_car_type=4&id_fuel_type=1&id_gear_type=3&yfrom=2014';
+var db = require('./db.js');
+arrayOfCarObjects="testiä"
 
-function getCarPageHTML (url){
-    fetch(url)
-    
+
+function upsertCarsToMongoDB(array){
+    db.open().then((db)=>{
+        console.log(array)
+        db.close();
+    });
 }
 
+
+upsertCarsToMongoDB(arrayOfCarObjects);
+
+/**
 var page = fetch(seedURL);
 
 page.then((content)=>{
     return content.text();
 }).then(createCarObjectsFromResultPage)
+.then((array)=>{
+console.log(array);
+})
 
-
+ */
 function createCarObjectsFromResultPage (body){
     var $ = cheerio.load(body);
-    var lkm = 0
+    var scrapedCars = [];
     $('div.data_box').each(function(i, listItem){
           // Scrape URL and price from car list.
           var listItemRoot = listItem.parent.parent;
@@ -43,10 +55,13 @@ function createCarObjectsFromResultPage (body){
             scrapedCar.milage=otherInfo[1].children[0].data.replace(/\D/g,'');
             scrapedCar.fuelType=otherInfo[2].children[0].data;
             scrapedCar.transmission=otherInfo[3].children[0].data;
-          console.log("auto nro: " + lkm)
-          console.log(scrapedCar);
-          lkm++;
+          
+          
+          scrapedCars.push(scrapedCar);
           }
+    })
+    return new Promise((resolve, reject)=>{
+        resolve(scrapedCars);
     })
 }
 
