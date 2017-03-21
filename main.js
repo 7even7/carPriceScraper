@@ -3,14 +3,59 @@ var promise = require('bluebird');
 var fetch = require('node-fetch');
 var seedURL = 'http://www.nettiauto.com/mercedes-benz/c?id_vehicle_type=1&id_car_type=4&id_fuel_type=1&id_gear_type=3&yfrom=2014';
 var db = require('./db.js');
-arrayOfCarObjects="testiä"
+
+arrayOfCarObjects=[
+    {
+    URL: 'https://www.nettiauto.com/mercedes-benz/c/8663467',
+    _id: '8663467',
+    siteID: 'Nettiauto',
+    make: 'Mercedes-Benz',
+    model: 'C',
+    buildYear: '2016',
+    plateNumber: null,
+    drive: null,
+    transmission: 'Automaatti',
+    engine: '2.0',
+    fuelType: 'Bensiini',
+    milage: '7000',
+    priceHistory: [ [Object] ],
+    location: 'Vantaa ›',
+    seller: 'Veho Mercedes-Benz Airport' },
+   {
+    URL: 'https://www.nettiauto.com/mercedes-benz/c/8677729',
+    _id: '8677729',
+    siteID: 'Nettiauto',
+    make: 'Mercedes-Benz',
+    model: 'C',
+    buildYear: '2017',
+    plateNumber: null,
+    drive: null,
+    transmission: 'Automaatti',
+    engine: '1.6',
+    fuelType: 'Bensiini',
+    milage: '',
+    priceHistory: [ [Object] ],
+    location: 'Jyväskylä ›',
+    seller: 'Käyttöauto Oy Jyväskylä' } ]
 
 
 function upsertCarsToMongoDB(array){
     db.open().then((db)=>{
-        console.log(array)
-        db.close();
-    });
+        connection = db;
+        return db.collection('cars');
+    }).then((cars)=>{
+        cars.find({_id: array[1]._id}).toArray().then((car)=>{
+            console.log(car);
+        })
+            
+    connection.close();
+       
+
+        
+        
+    }).catch((error)=>{
+        console.log(error);
+    })
 }
 
 
