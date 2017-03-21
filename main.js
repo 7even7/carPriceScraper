@@ -2,7 +2,6 @@ var cheerio = require('cheerio');
 var promise = require('bluebird');
 var fetch = require('node-fetch');
 var seedURL = 'http://www.nettiauto.com/mercedes-benz/c?id_vehicle_type=1&id_car_type=4&id_fuel_type=1&id_gear_type=3&yfrom=2014';
-var timeOfScraping = new Date().toJSON()
 
 function getCarPageHTML (url){
     fetch(url)
@@ -27,7 +26,7 @@ function createCarObjectsFromResultPage (body){
           scrapedCar._id=URL.split('/')[URL.split('/').length-1];
           // update car-object with rest of the data
           var price = $('.main_price',this).text().replace(/\D/g,'')
-          scrapedCar.priceHistory.unshift([price, timeOfScraping]);
+          scrapedCar.priceHistory.unshift([price, new Date().toJSON()]);
           scrapedCar.engine=$('.eng_size', this).text().replace(/[^0-9\.]+/g,""); 
           // Make and model need to be parsed from the same string
           var makeModel = $('.make_model_link', this).text().split(' ');
@@ -49,8 +48,6 @@ function createCarObjectsFromResultPage (body){
           lkm++;
           }
     })
-    
-    
 }
 
 
