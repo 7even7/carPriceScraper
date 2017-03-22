@@ -2,76 +2,20 @@ var cheerio = require('cheerio');
 var promise = require('bluebird');
 var fetch = require('node-fetch');
 var seedURL = 'http://www.nettiauto.com/mercedes-benz/c?id_vehicle_type=1&id_car_type=4&id_fuel_type=1&id_gear_type=3&yfrom=2014';
-var db = require('./db.js');
-
-arrayOfCarObjects=[
-    {
-    URL: 'https://www.nettiauto.com/mercedes-benz/c/8663467',
-    _id: '8663467',
-    siteID: 'Nettiauto',
-    make: 'Mercedes-Benz',
-    model: 'C',
-    buildYear: '2016',
-    plateNumber: null,
-    drive: null,
-    transmission: 'Automaatti',
-    engine: '2.0',
-    fuelType: 'Bensiini',
-    milage: '7000',
-    priceHistory: [ [Object] ],
-    location: 'Vantaa ›',
-    seller: 'Veho Mercedes-Benz Airport' },
-   {
-    URL: 'https://www.nettiauto.com/mercedes-benz/c/8677729',
-    _id: '8677729',
-    siteID: 'Nettiauto',
-    make: 'Mercedes-Benz',
-    model: 'C',
-    buildYear: '2017',
-    plateNumber: null,
-    drive: null,
-    transmission: 'Automaatti',
-    engine: '1.6',
-    fuelType: 'Bensiini',
-    milage: '',
-    priceHistory: [ [Object] ],
-    location: 'Jyväskylä ›',
-    seller: 'Käyttöauto Oy Jyväskylä' } ]
-
-
-function upsertCarsToMongoDB(array){
-    db.open().then((db)=>{
-        connection = db;
-        return db.collection('cars');
-    }).then((cars)=>{
-        cars.find({_id: array[1]._id}).toArray().then((car)=>{
-            console.log(car);
-        })
-            
-    connection.close();
-       
-
-        
-        
-    }).catch((error)=>{
-        console.log(error);
-    })
+var mongodb = require('./db.js');
+var results = {
+    inserted : 0,
+    modified : 0
 }
 
 
-upsertCarsToMongoDB(arrayOfCarObjects);
-
-/**
 var page = fetch(seedURL);
-
 page.then((content)=>{
     return content.text();
 }).then(createCarObjectsFromResultPage)
-.then((array)=>{
-console.log(array);
-})
+.then(saveData)
 
- */
+
 function createCarObjectsFromResultPage (body){
     var $ = cheerio.load(body);
     var scrapedCars = [];
@@ -108,6 +52,23 @@ function createCarObjectsFromResultPage (body){
     return new Promise((resolve, reject)=>{
         resolve(scrapedCars);
     })
+}
+
+function saveData (arrayOfCars){    
+    var db = mongodb.open();
+    db.then((db)=>{
+        return promise.map(arrayOfCars, (car)=>{
+                return db.collection('test').updateOne(
+                {"_id": car._id},car, {upsert : true}
+            )
+        })
+    }).then((resultArray)=>{
+        for (result of resultArray){
+            results.modified+=result.modifiedCount;
+            results.inserted+=result.upsertedCount;
+        }
+        console.log(results);
+    })  
 }
 
 

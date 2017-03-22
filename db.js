@@ -6,6 +6,14 @@ function open(){
     return mongoClient.connect(MongoConnectionString);
 }
 
+function openCollection(){
+    return mongoClient.connect(MongoConnectionString)
+    .then((db)=>{
+        return db.collection('test');
+    })
+}
+
+
 function close(db){
     //Close connection
     if(db){
@@ -15,7 +23,8 @@ function close(db){
 
 let db = {
     open : open,
-    close: close
+    close: close,
+    openCollection: openCollection
 }
 
 module.exports = db;
